@@ -114,22 +114,25 @@ grid_pdf = title.exportToPDF(r'E:\kboysen_gis\NVCreditSummaryTool\outputs\gridre
 
 ################################
 ###########MAP SERIES
-####
-
-serieslayout = aprx.listLayouts('MapSeries')[0]
 
 #update in grid template = new grid
     # input: grid, shapefile, layout
     #output: multiple map pages
 
+####
+arcpy.AddMessage("Updating Map Series")
+serieslayout = aprx.listLayouts('MapSeries')[0] ##name the layout
+ms = serieslayout.mapSeries #name the series
+index_template = ms.indexLayer.dataSource #name current index layer
+arcpy.CopyFeatures_management("grid", "index_template") ##replace index layer with new grid
+ms.refresh()     #refresh map series
+arcpy.AddMessage("Updating Map Series Layout")
+arcpy.ApplySymbologyFromLayer_management(grid, r'E:\kboysen_gis\NVCreditSummaryTool\NVCSS_CreditSummaryTemplate\grid_invisible_template.lyrx')
 
-if not serieslayout.mapSeries is None:
-    ms = serieslayout.mapSeries
-    if ms.enabled:
-        ms = serieslayout.mapSeries
-        indexLyr = grid
-        #arcpy.SelectLayerByAttribute_management(indexLyr, "NEW_SELECTION", "SUB_REGION = 'New England'")
-        ms.exportToPDF(r"E:\kboysen_gis\NVCreditSummaryTool\outputs\series.pdf")
+arcpy.AddMessage("Exporting Map Series")
+
+
+ms.exportToPDF(r"E:\kboysen_gis\NVCreditSummaryTool\outputs\series.pdf")
 
 ###
 arcpy.Delete_management("in_memory")
