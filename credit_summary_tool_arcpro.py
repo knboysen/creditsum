@@ -2,10 +2,10 @@
 ## This will be copied into NV_Output.py
 
 import pandas
-import arcpy
-from arcpy import env
-from arcpy.sa import *
-arcpy.env.overwriteOutput = True
+#import arcpy
+#from arcpy import env
+#from arcpy.sa import *
+#arcpy.env.overwriteOutput = True
 import os
 import sys
 import numpy as np
@@ -165,14 +165,16 @@ def autolabel(rects, ax):
     '''
     (x_bottom, x_top) = ax.get_xlim()
     x_height = x_top - x_bottom
+    fo
     for rect in rects:
-        width = round(rect.get_width())
+        width = round(rect.get_width(), 0)
         label_position = width + (x_height * 0.01)
         ax.annotate('{}'.format(width),
-                    xy=(label_position, rect.get_y() + rect.get_height() / 2),
-                    xytext=(3, -3),  # 3 points vertical offset
+                    xy=(width, rect.get_y()),
+                    xytext=(0, rect.get_height()/2),  # 
                     textcoords="offset points",
-                    ha='center', va='bottom')
+                    ha='center', 
+                    va='bottom')
 
 ###### FIGURE 1
 # bar chart of MU current conditions
@@ -259,6 +261,7 @@ plotmu2 = plotmu2.sort_values(by=['max'], ascending = True, na_position = 'first
 ##set caption
 #TODO change to dynamic text
 t= ("This graph shows the projected credits for each Map Unit based on the \n ideal management regime. \n These 'idealized' credits are compared to the maximum credits in the calcualator \n (either predicted or current). As shown, Map Unit 19 has the greatest total number \n of credits, with  902 current credits, if Restoration Management Scenarion 5 \n(High Effort Level) is used") 
+
 #######################################################################
 ### new bar graph
 #############################################
@@ -266,13 +269,19 @@ t= ("This graph shows the projected credits for each Map Unit based on the \n id
 ## sort by saleable credits/maximum credits
 celltext = plotmu['map_unit_name'].values.tolist()
 celltext.reverse()
+celltext += [' ']
 rows = plotmu['map_unit_id'].values.tolist()
 rows.reverse()
+rows += [' ']
 cell_long = [[i] for i in celltext]
+
+prop_bars = 0.92
 
 
 fig, (ax1, ax2) = plt.subplots(1,2, sharey= True, figsize = (7,9))
-plot1 = ax1.barh(plotmu['map_unit_id'], width = plotmu['map_unit_area'])
+cell_height = (1 /(len(plotmu['map_unit_id']))) * prop_bars
+
+plot1 = ax1.barh(plotmu['map_unit_id'], width = plotmu['map_unit_area'], align = 'center')
 #could use ax1. get_window_extent() ? returns 489 tho, so confused what that unit is. 
 ax1.set_ylabel('Map Unit #')
 ax1.set_xlabel('Acres')
@@ -281,12 +290,20 @@ table = ax1.table(cellText=cell_long,
             cellLoc = 'center',
             rowLabels = rows,
             colLabels = 'Map Unit Name',
-            loc = 'left')
+            loc = 'left', 
+            edges = 'horizontal')
 
-cell_height = (1 / len(plotmu['map_unit_id']))
 for pos, cell in table.get_celld().items():
-    cell.set_height(cell_height)
+    if pos == (0,0): 
+        cell.set_height((1-prop_bars)/2)
+    elif pos == (len(rows),0) or pos == (len(rows),-1):
+        cell.set_height((1-prop_bars)/2)
+    else:
+        cell.set_height(cell_height)
 
+
+    ##set header row to be static
+    ##set the rest of the cells to be 1/# of map units
 
 #ax2.barh(plotmu['map_unit_id'], width = plotmu['maxcredits'])
 ax2.barh(plotmu['map_unit_id'], width = plotmu['proj_credits'])
@@ -300,7 +317,6 @@ ax2.legend(['Projected Credits', 'Current Credits'])
 #MU#, MUN, MapUnit Area w/ label (acres)
 ####
 ##column 2 in 
-
 
 
 ###########
